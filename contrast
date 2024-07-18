@@ -1,0 +1,45 @@
+#include "opencv2/opencv.hpp"
+#include <iostream>
+
+using namespace std;
+using namespace cv;
+
+int contrastEnh(int input, int x1, int y1, int x2, int y2)
+{
+    double output;
+    if (0 <= input && input <= x1) {
+        output = y1 / x1 * input;
+    }
+    else if (x1 < input && input <= x2) {
+        output = ((y2 - y1) / (x2 - x1)) * (input - x1) + y1;
+    }
+    else if (x2 < input && input <= 255) {
+        output = ((255 - y2) / (255 - x2)) * (input - x2) + y2;
+    }
+    return (int)output;
+}
+
+int main()
+{
+    Mat src, dst;
+    src = imread("Lenna.jpg", IMREAD_GRAYSCALE);
+    if (src.empty()) {
+        cerr << "Image load failed!" << endl;
+        return -1;
+    }
+    imshow("Input", src);
+
+    // 입력 영상 스케일링
+    normalize(src, src, 0, 255, NORM_MINMAX, CV_8U);
+
+    // contrastEnh 함수 적용
+    int x1 = 64, y1 = 16, x2 = 192, y2 = 240;
+    MatIterator_<uchar> it, end;
+    for (it = dst.begin<uchar>(), end = dst.end<uchar>(); it != end; ++it) {
+        *it = contrastEnh(*it, x1, y1, x2, y2);
+    }
+
+    imshow("Output", dst);
+    waitKey();
+    return 0;
+}
