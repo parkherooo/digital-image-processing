@@ -1,0 +1,48 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int main()
+{
+    // 이미지 불러오기
+    Mat image = imread("Lenna.jpg", IMREAD_GRAYSCALE);
+    if (image.empty())
+    {
+        cout << "Failed to load the image." << endl;
+        return -1;
+    }
+
+    // 케니 에지 검출 수행
+    Mat edges;
+    Canny(image, edges, 100, 200);
+
+    // 이진화 수행
+    Mat binary;
+    threshold(edges, binary, 127, 255, THRESH_BINARY);
+
+    // 이진화 결과와 에지 검출 영상의 비교
+    Mat diff;
+    absdiff(binary, edges, diff);
+    int numDifferentPixels = countNonZero(diff);
+
+    // 결과 출력
+    namedWindow("Original Image", WINDOW_NORMAL);
+    namedWindow("Edges", WINDOW_NORMAL);
+    namedWindow("Binary", WINDOW_NORMAL);
+    namedWindow("Difference", WINDOW_NORMAL);
+
+    imshow("Original Image", image);
+    imshow("Edges", edges);
+    imshow("Binary", binary);
+    imshow("Difference", diff);
+
+    cout << "이진화 결과와 에지 검출 영상의 비교:" << endl;
+    cout << "차이가 있는 픽셀 개수: " << numDifferentPixels << endl;
+
+    waitKey(0);
+    destroyAllWindows();
+
+    return 0;
+}
