@@ -1,0 +1,41 @@
+#include <opencv2/opencv.hpp>
+using namespace cv;
+int main()
+{
+ // 입력 영상 로드
+ Mat inputImage = imread("HitMissInput.png", 0);
+ if (inputImage.empty())
+ {
+ std::cout << "입력 영상을 불러오지 못했습니다." << std::endl;
+ return -1;
+ }
+ // 구조 요소 커널 정의
+ Mat kernel = (Mat_<char>(6, 5) <<
+ 0, 0, 0, 0, 0,
+ 0, 1, 1, 1, 0,
+ 0, 1, 0, 0, 1,
+ 0, 1, 1, 1, 1,
+ 0, 1, 1, 1, 0,
+ 0, 0, 0, 0, 0);
+ // Hit-or-Miss 변환 적용
+ Mat outputImage;
+ morphologyEx(inputImage, outputImage, MORPH_HITMISS, kernel);
+ // 결과 영상에 타원 그리기
+ Mat resultImage;
+ cvtColor(inputImage, resultImage, COLOR_GRAY2BGR); // 결과 영상을 컬러로 변환하여 타원을 그릴 수 있도록 함
+ std::vector<std::vector<Point>> contours;
+ findContours(outputImage, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+ for (const auto& contour : contours)
+ {
+ if (contourArea(contour) > 100)
+ {
+ RotatedRect boundingEllipse = fitEllipse(contour);
+ ellipse(resultImage, boundingEllipse, Scalar(0, 0, 255), 2);
+ }
+ }
+ // 결과 영상 출력
+ namedWindow("Result", WINDOW_NORMAL);
+ imshow("Result", resultImage);
+ waitKey(0);
+ return 0;
+}
