@@ -1,0 +1,55 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat img, img_roi;
+
+Rect rect;
+Point2f point1, point2;
+
+void mouse_callback(int event, int x, int y, int flags, void* userdata) {
+    static bool drag = false;
+
+    if (event == EVENT_LBUTTONDOWN) {
+        drag = true;
+        point1.x = x;
+        point1.y = y;
+        point2.x = x;
+        point2.y = y;
+    }
+    else if (event == EVENT_MOUSEMOVE) {
+        if (drag) {
+            point2.x = x;
+            point2.y = y;
+            rect.x = min(point1.x, point2.x);
+            rect.y = min(point1.y, point2.y);
+            rect.width = abs(point1.x - point2.x);
+            rect.height = abs(point1.y - point2.y);
+            rectangle(img, rect, Scalar(0, 0, 255), 3);
+            imshow("img", img);
+        }
+    }
+    else if (event == EVENT_LBUTTONUP) {
+        drag = false;
+        img_roi = img(rect);
+        img_roi += Scalar(50, 50, 50);
+        imshow("roi", img_roi);
+    }
+}
+
+int main() {
+    img = imread("Lenna.jpg", IMREAD_COLOR);
+    if (img.empty()) {
+        cout << "Could not open or find the image" << endl;
+        return -1;
+    }
+
+    namedWindow("img", WINDOW_NORMAL);
+    setMouseCallback("img", mouse_callback, 0);
+
+    imshow("img", img);
+    waitKey(0);
+    return 0;
+}
