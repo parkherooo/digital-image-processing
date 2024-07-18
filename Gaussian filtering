@@ -1,0 +1,45 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+int main()
+{
+    // 잡음 입력 영상 불러오기
+    Mat image = imread("Lenna.jpg", IMREAD_GRAYSCALE);
+    if (image.empty())
+    {
+        cout << "Failed to load the image." << endl;
+        return -1;
+    }
+
+    // 잡음이 있는 영상에 대한 평균값 필터링과 가우시안 필터링 적용
+    for (int kernelSize = 3; kernelSize <= 9; kernelSize += 2)
+    {
+        // 평균값 필터링 적용
+        Mat averaged;
+        blur(image, averaged, Size(kernelSize, kernelSize));
+
+        // 가우시안 필터링 적용
+        Mat gaussian;
+        GaussianBlur(image, gaussian, Size(kernelSize, kernelSize), 0);
+
+        // 창 생성 및 이미지 표시
+        namedWindow("Original Image", WINDOW_NORMAL);
+        namedWindow("Averaged Filtered Image", WINDOW_NORMAL);
+        namedWindow("Gaussian Filtered Image", WINDOW_NORMAL);
+
+        imshow("Original Image", image);
+        imshow("Averaged Filtered Image", averaged);
+        imshow("Gaussian Filtered Image", gaussian);
+
+        // 키 입력 대기
+        waitKey(0);
+
+        // 창 닫기
+        destroyAllWindows();
+    }
+
+    return 0;
+}
